@@ -1,23 +1,20 @@
 import EditorJS from "@editorjs/editorjs";
+// @ts-ignore
 import Header from "@editorjs/header";
+// @ts-ignore
 import Paragraph from "@editorjs/paragraph";
 import { Box } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
+import { useEditor } from "./useEditor";
 
-// import { createReactEditorJS } from "react-editor-js";
-
-// const Editor = createReactEditorJS();
-
-// export default Editor;
+export let editor: EditorJS | null = null;
 
 const Editor = () => {
+  const { setEditor } = useEditor();
   const [mounted, setMounted] = useState(false);
 
   const ref = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorJS | null>(null);
-
-  const holder = ref.current;
-  const editor = editorRef.current;
 
   useEffect(() => {
     setMounted(true);
@@ -25,22 +22,25 @@ const Editor = () => {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!holder) return;
+    if (!ref.current) return;
+    if (editorRef.current) return;
 
     editorRef.current = new EditorJS({
-      holder,
+      holder: ref.current,
       tools: {
         header: Header,
         paragraph: Paragraph,
       },
     });
 
+    setEditor(editorRef.current);
+
     return () => {
-      if (editor) {
-        editor.destroy();
+      if (editorRef.current) {
+        editorRef.current.destroy();
       }
     };
-  }, [mounted, holder, editor]);
+  }, [mounted, setEditor]);
 
   return <Box ref={ref} />;
 };
